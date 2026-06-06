@@ -1,8 +1,8 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import joblib
 import os
-import pandas as pd
 
 # =========================
 # PAGE CONFIG
@@ -17,7 +17,7 @@ st.title("🧠 Career Prediction Center")
 st.markdown("Predict placement chances, salary, and career readiness.")
 
 # =========================
-# PATH SETUP
+# PATH SETUP (IMPORTANT FIX)
 # =========================
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MODEL_DIR = os.path.join(BASE_DIR, "models")
@@ -25,9 +25,13 @@ MODEL_DIR = os.path.join(BASE_DIR, "models")
 # =========================
 # LOAD MODELS + FEATURES
 # =========================
-salary_model = joblib.load(os.path.join(MODEL_DIR, "salary_model.pkl"))
-placement_model = joblib.load(os.path.join(MODEL_DIR, "placement_model.pkl"))
-feature_list = joblib.load(os.path.join(MODEL_DIR, "feature_list.pkl"))
+try:
+    salary_model = joblib.load(os.path.join(MODEL_DIR, "salary_model.pkl"))
+    placement_model = joblib.load(os.path.join(MODEL_DIR, "placement_model.pkl"))
+    feature_list = joblib.load(os.path.join(MODEL_DIR, "feature_list.pkl"))
+except Exception as e:
+    st.error(f"Model loading failed: {e}")
+    st.stop()
 
 # =========================
 # INPUT SECTION
@@ -41,7 +45,7 @@ internships = st.slider("Internships Completed", 0, 10, 0)
 projects = st.slider("Projects Completed", 0, 20, 0)
 
 # =========================
-# CREATE INPUT DICT (IMPORTANT)
+# USER INPUT DICTIONARY
 # =========================
 user_data = {
     "University_GPA": gpa,
@@ -52,31 +56,36 @@ user_data = {
 }
 
 # =========================
-# BUILD FULL FEATURE VECTOR
+# BUILD DATAFRAME MATCHING TRAINING FEATURES
 # =========================
 input_df = pd.DataFrame([user_data])
 
-# fill missing columns from training features
+# Fill missing columns with 0
 for col in feature_list:
     if col not in input_df.columns:
         input_df[col] = 0
 
-# reorder EXACTLY like training
+# Reorder columns EXACTLY like training
 input_df = input_df[feature_list]
 
-# =========================
-# PREDICTIONS
-# =========================
 st.write("📊 Final Input Shape:", input_df.shape)
 
-# SALARY
+# =========================
+# SALARY PREDICTION
+# =========================
+st.subheader("💰 Salary Prediction")
+
 try:
     salary_pred = salary_model.predict(input_df)[0]
     st.success(f"💰 Predicted Salary: {salary_pred:.2f}")
 except Exception as e:
     st.error(f"Salary prediction failed: {e}")
 
-# PLACEMENT
+# =========================
+# PLACEMENT PREDICTION
+# =========================
+st.subheader("🎯 Placement Prediction")
+
 try:
     placement_pred = placement_model.predict(input_df)[0]
 
@@ -89,7 +98,7 @@ except Exception as e:
     st.error(f"Placement prediction failed: {e}")
 
 # =========================
-# CAREER SCORE (SAFE)
+# CAREER READINESS SCORE
 # =========================
 st.subheader("📊 Career Readiness")
 
@@ -104,3 +113,22 @@ elif score >= 4:
     st.info("Good profile 👍")
 else:
     st.warning("Needs improvement ⚠️")
+
+# =========================
+# ROADMAP
+# =========================
+st.subheader("🛣 Career Roadmap")
+
+if skills < 5:
+    st.write("👉 Improve technical skills")
+
+if internships < 2:
+    st.write("👉 Do internships")
+
+if networking < 5:
+    st.write("👉 Improve networking")
+
+if projects < 3:
+    st.write("👉 Build more projects")
+
+st.success("🚀 Keep improving for better opportunities!")
