@@ -1,1 +1,120 @@
+/* =========================
+   GLOBAL STYLING
+========================= */
 
+body {
+    background-color: #0e1117;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Streamlit main container */
+.block-container {
+    padding-top: 2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+/* =========================
+   SIDEBAR STYLING
+========================= */
+
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+    color: white;
+}
+
+section[data-testid="stSidebar"] * {
+    color: white;
+}
+
+/* Sidebar headers */
+.css-1d391kg {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* =========================
+   HEADINGS
+========================= */
+
+h1, h2, h3 {
+    color: #00c6ff;
+}
+
+/* =========================
+   METRICS BOX
+========================= */
+
+div[data-testid="stMetric"] {
+    background: #1f2937;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Metric values */
+div[data-testid="stMetricValue"] {
+    font-size: 20px;
+    font-weight: bold;
+    color: #00ffcc;
+}
+
+/* =========================
+   DATAFRAME STYLING
+========================= */
+
+.dataframe {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.stButton > button {
+    background-color: #00c6ff;
+    color: white;
+    border-radius: 8px;
+    padding: 8px 16px;
+    border: none;
+    transition: 0.3s ease;
+}
+
+.stButton > button:hover {
+    background-color: #0072ff;
+    transform: scale(1.05);
+}
+
+/* =========================
+   SUCCESS / ERROR BOX
+========================= */
+
+.stSuccess {
+    background-color: #064e3b;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.stError {
+    background-color: #7f1d1d;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    visibility: hidden;
+}
+
+/* Custom footer */
+.custom-footer {
+    text-align: center;
+    padding: 20px;
+    color: #9ca3af;
+    font-size: 14px;
+}
