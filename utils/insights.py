@@ -1,28 +1,28 @@
 import pandas as pd
 
-
-# =====================================================
-# SALARY INSIGHTS
-# =====================================================
-
-def get_salary_insights(df):
-
+def generate_insights(df):
     insights = []
 
-    if "Starting_Salary" not in df.columns:
-        return ["Salary column not found."]
+    insights.append(f"Total Records: {df.shape[0]}")
+    insights.append(f"Total Features: {df.shape[1]}")
 
-    avg_salary = df["Starting_Salary"].mean()
-    max_salary = df["Starting_Salary"].max()
-    min_salary = df["Starting_Salary"].min()
+    if "Starting_Salary" in df.columns:
+        insights.append(f"Average Salary: {df['Starting_Salary'].mean():,.2f}")
 
-    insights.append(
-        f"Average salary is ₹{avg_salary:,.0f}"
-    )
+    if "University_GPA" in df.columns:
+        insights.append(f"Average GPA: {df['University_GPA'].mean():.2f}")
 
-    insights.append(
-        f"Highest salary recorded is ₹{max_salary:,.0f}"
-    )
+    if "Career_Satisfaction" in df.columns:
+        insights.append(f"Average Career Satisfaction: {df['Career_Satisfaction'].mean():.2f}")
 
-    insights.append(
-        f"Lowest salary recorded is ₹
+    if "Gender" in df.columns:
+        top_gender = df["Gender"].mode()[0]
+        insights.append(f"Most Common Gender: {top_gender}")
+
+    return insights
+
+
+def top_correlation(df):
+    numeric_df = df.select_dtypes(include=["int64", "float64"])
+    corr = numeric_df.corr()
+    return corr
