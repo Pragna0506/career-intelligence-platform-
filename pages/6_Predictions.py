@@ -16,7 +16,7 @@ st.title("🧠 Career Prediction Center")
 st.markdown("Predict placement chances, salary, and career readiness.")
 
 # =========================
-# PATH FIX
+# PATH SETUP
 # =========================
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MODEL_DIR = os.path.join(BASE_DIR, "models")
@@ -24,12 +24,8 @@ MODEL_DIR = os.path.join(BASE_DIR, "models")
 # =========================
 # LOAD MODELS
 # =========================
-try:
-    salary_model = joblib.load(os.path.join(MODEL_DIR, "salary_model.pkl"))
-    placement_model = joblib.load(os.path.join(MODEL_DIR, "placement_model.pkl"))
-except Exception as e:
-    st.error(f"Model loading failed: {e}")
-    st.stop()
+salary_model = joblib.load(os.path.join(MODEL_DIR, "salary_model.pkl"))
+placement_model = joblib.load(os.path.join(MODEL_DIR, "placement_model.pkl"))
 
 # =========================
 # INPUT SECTION
@@ -43,7 +39,7 @@ internships = st.slider("Internships Completed", 0, 10, 0)
 projects = st.slider("Projects Completed", 0, 20, 0)
 
 # =========================
-# REAL INPUT (NO FAKE EXPANSION)
+# INPUT ARRAY (REAL FEATURES ONLY)
 # =========================
 input_data = np.array([[gpa, skills, networking, internships, projects]])
 
@@ -54,34 +50,34 @@ st.write("📊 Input Data:", input_data)
 # =========================
 st.subheader("💰 Salary Prediction")
 
-try:
-    salary_pred = salary_model.predict(input_data)[0]
-    st.success(f"💰 Predicted Salary: {salary_pred:.2f}")
-except Exception:
-    st.warning("⚠️ Salary model feature mismatch. Output may not be accurate.")
+salary_pred = salary_model.predict(input_data)[0]
+st.success(f"💰 Predicted Salary: {salary_pred:.2f}")
 
 # =========================
 # PLACEMENT PREDICTION
 # =========================
 st.subheader("🎯 Placement Prediction")
 
-try:
-    placement_pred = placement_model.predict(input_data)[0]
+placement_pred = placement_model.predict(input_data)[0]
 
-    if placement_pred >= 0.5:
-        st.success("🎯 High Chance of Placement")
-    else:
-        st.warning("⚠️ Low Chance of Placement")
-
-except Exception:
-    st.warning("⚠️ Placement model feature mismatch. Output may not be accurate.")
+if placement_pred >= 0.5:
+    st.success("🎯 High Chance of Placement")
+else:
+    st.warning("⚠️ Low Chance of Placement")
 
 # =========================
 # CAREER READINESS SCORE
 # =========================
 st.subheader("📊 Career Readiness")
 
-score = (gpa * 10 + skills * 5 + networking * 5 + internships * 5 + projects * 2) / 10
+score = (
+    gpa * 10 +
+    skills * 5 +
+    networking * 5 +
+    internships * 5 +
+    projects * 2
+) / 10
+
 score = min(score, 10)
 
 st.metric("Career Score", f"{score:.1f}/10")
@@ -94,7 +90,7 @@ else:
     st.warning("Needs improvement ⚠️")
 
 # =========================
-# ROADMAP
+# CAREER ROADMAP
 # =========================
 st.subheader("🛣 Career Roadmap")
 
