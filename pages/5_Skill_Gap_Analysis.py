@@ -2,374 +2,110 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
 
-# ==========================================================
-# PAGE CONFIG
-# ==========================================================
+st.set_page_config(page_title="Skill Gap Analysis", layout="wide")
 
-st.set_page_config(
-    page_title="Skill Gap Analysis",
-    page_icon="🎯",
-    layout="wide"
-)
+st.title("📊 Skill Gap Analysis Dashboard")
 
-# ==========================================================
+# -----------------------------
 # LOAD DATA
-# ==========================================================
-
+# -----------------------------
 @st.cache_data
 def load_data():
-    return pd.read_csv("data3/education_career_success.csv")
+    df = pd.read_csv("data/Job_Placement_Data_Enhanced.csv")
+    return df
 
 df = load_data()
 
-# ==========================================================
-# TITLE
-# ==========================================================
+st.subheader("Dataset Preview")
+st.dataframe(df.head())
 
-st.title("🎯 Skill Gap Analysis")
-st.markdown(
-    "Identify strengths, weaknesses, career readiness, and improvement opportunities."
-)
+# -----------------------------
+# FIX: HANDLE MISSING COLUMNS
+# -----------------------------
 
-# ==========================================================
-# REQUIRED COLUMNS CHECK
-# ==========================================================
+required_columns = ["CGPA", "IQ", "Communication_Skills", "Technical_Skills"]
 
-required_cols = [
-    "Skills_Score",
-    "Networking_Score",
-    "Projects_Completed",
-    "Internships_Completed"
-]
+for col in required_columns:
+    if col not in df.columns:
+        st.warning(f"Missing column detected: {col} → Creating default values")
+        df[col] = 0
 
-missing = [col for col in required_cols if col not in df.columns]
+# Create Skills_Score if missing
+if "Skills_Score" not in df.columns:
+    st.info("Skills_Score not found → Generating from existing features")
 
-if missing:
-    st.error(
-        f"Missing required columns: {', '.join(missing)}"
-    )
-    st.stop()
+    df["Skills_Score"] = (
+        df["Communication_Skills"] +
+        df["Technical_Skills"]
+    ) / 2
 
-# ==========================================================
-# CAREER READINESS SCORE
-# ==========================================================
+# -----------------------------
+# SKILL GAP ANALYSIS
+# -----------------------------
 
-df["Career_Readiness_Score"] = (
-    df["Skills_Score"] * 0.35 +
-    df["Networking_Score"] * 0.25 +
-    df["Projects_Completed"] * 0.20 +
-    df["Internships_Completed"] * 0.20
-)
+st.subheader("📉 Skill Score Distribution")
 
-# ==========================================================
-# KPI SECTION
-# ==========================================================
-
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric(
-    "Average Skill Score",
-    f"{df['Skills_Score'].mean():.2f}"
-)
-
-col2.metric(
-    "Average Networking",
-    f"{df['Networking_Score'].mean():.2f}"
-)
-
-col3.metric(
-    "Avg Internships",
-    f"{df['Internships_Completed'].mean():.2f}"
-)
-
-col4.metric(
-    "Career Readiness",
-    f"{df['Career_Readiness_Score'].mean():.2f}"
-)
-
-st.divider()
-
-# ==========================================================
-# CAREER READINESS DISTRIBUTION
-# ==========================================================
-
-st.subheader("📊 Career Readiness Distribution")
-
-fig = px.histogram(
+fig1 = px.histogram(
     df,
-    x="Career_Readiness_Score",
-    nbins=30,
-    title="Career Readiness Score Distribution"
+    x="Skills_Score",
+    nbins=20,
+    title="Distribution of Skills Score"
 )
+st.plotly_chart(fig1, use_container_width=True)
 
-st.plotly_chart(fig, use_container_width=True)
+# -----------------------------
+# SKILL vs PLACEMENT (if exists)
+# -----------------------------
 
-# ==========================================================
-# SKILL SCORE DISTRIBUTION
-# ==========================================================
+if "Placement_Status" in df.columns:
+    st.subheader("🎯 Skills vs Placement")
 
-st.subheader("🚀 Skill Score Distribution")
-
-fig = px.box(
-    df,
-    y="Skills_Score"
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# ==========================================================
-# NETWORKING ANALYSIS
-# ==========================================================
-
-st.subheader("🤝 Networking Score Analysis")
-
-fig = px.histogram(
-    df,
-    x="Networking_Score",
-    nbins=20
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# ==========================================================
-# INTERNSHIP IMPACT
-# ==========================================================
-
-st.subheader("🏢 Internship Contribution")
-
-internship_counts = (
-    df["Internships_Completed"]
-    .value_counts()
-    .reset_index()
-)
-
-internship_counts.columns = [
-    "Internships",
-    "Count"
-]
-
-fig = px.bar(
-    internship_counts,
-    x="Internships",
-    y="Count",
-    text_auto=True
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# ==========================================================
-# PROJECT CONTRIBUTION
-# ==========================================================
-
-if "Projects_Completed" in df.columns:
-
-    st.subheader("📁 Projects Contribution")
-
-    fig = px.histogram(
+    fig2 = px.box(
         df,
-        x="Projects_Completed",
-        nbins=20
+        x="Placement_Status",
+        y="Skills_Score",
+        color="Placement_Status",
+        title="Skill Score vs Placement Status"
     )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-# ==========================================================
-# RADAR CHART
-# ==========================================================
-
-st.subheader("🕸 Average Competency Radar")
-
-avg_skill = df["Skills_Score"].mean()
-avg_network = df["Networking_Score"].mean()
-avg_projects = df["Projects_Completed"].mean()
-avg_internships = df["Internships_Completed"].mean()
-
-fig = go.Figure()
-
-fig.add_trace(
-    go.Scatterpolar(
-        r=[
-            avg_skill,
-            avg_network,
-            avg_projects,
-            avg_internships
-        ],
-        theta=[
-            "Skills",
-            "Networking",
-            "Projects",
-            "Internships"
-        ],
-        fill="toself"
-    )
-)
-
-fig.update_layout(
-    polar=dict(radialaxis=dict(visible=True)),
-    showlegend=False
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# ==========================================================
-# GAP IDENTIFICATION
-# ==========================================================
-
-st.subheader("⚠ Skill Gap Identification")
-
-threshold = st.slider(
-    "Gap Threshold",
-    min_value=1,
-    max_value=10,
-    value=6
-)
-
-skill_gap = {}
-
-for col in [
-    "Skills_Score",
-    "Networking_Score"
-]:
-    skill_gap[col] = (df[col] < threshold).sum()
-
-gap_df = pd.DataFrame({
-    "Category": list(skill_gap.keys()),
-    "Students_Below_Threshold": list(skill_gap.values())
-})
-
-fig = px.bar(
-    gap_df,
-    x="Category",
-    y="Students_Below_Threshold",
-    text_auto=True,
-    title="Students Below Desired Threshold"
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# ==========================================================
-# STUDENT SEGMENTATION
-# ==========================================================
-
-st.subheader("🏅 Career Readiness Segmentation")
-
-conditions = [
-    df["Career_Readiness_Score"] >= 8,
-    (df["Career_Readiness_Score"] >= 6) &
-    (df["Career_Readiness_Score"] < 8),
-    df["Career_Readiness_Score"] < 6
-]
-
-choices = [
-    "High Potential",
-    "Moderate Potential",
-    "Needs Improvement"
-]
-
-df["Segment"] = np.select(
-    conditions,
-    choices,
-    default="Needs Improvement"
-)
-
-segment_df = (
-    df["Segment"]
-    .value_counts()
-    .reset_index()
-)
-
-segment_df.columns = [
-    "Segment",
-    "Count"
-]
-
-fig = px.pie(
-    segment_df,
-    names="Segment",
-    values="Count",
-    title="Career Readiness Segments"
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# ==========================================================
-# RECOMMENDATIONS
-# ==========================================================
-
-st.subheader("💡 Recommendations")
-
-avg_skill = df["Skills_Score"].mean()
-avg_network = df["Networking_Score"].mean()
-
-recommendations = []
-
-if avg_skill < 6:
-    recommendations.append(
-        "Improve technical skills through projects and certifications."
-    )
-
-if avg_network < 6:
-    recommendations.append(
-        "Participate in networking events and professional communities."
-    )
-
-if df["Internships_Completed"].mean() < 2:
-    recommendations.append(
-        "Encourage students to complete additional internships."
-    )
-
-if df["Projects_Completed"].mean() < 3:
-    recommendations.append(
-        "Increase project-based learning opportunities."
-    )
-
-if recommendations:
-    for item in recommendations:
-        st.warning(item)
+    st.plotly_chart(fig2, use_container_width=True)
 else:
-    st.success(
-        "No major skill gaps detected. Overall readiness is strong."
-    )
+    st.warning("Placement_Status column not found in dataset")
 
-# ==========================================================
-# CORRELATION HEATMAP
-# ==========================================================
+# -----------------------------
+# TOP STUDENTS ANALYSIS
+# -----------------------------
 
-st.subheader("📈 Correlation Analysis")
+st.subheader("🏆 Top Students by Skills Score")
 
-numeric_df = df.select_dtypes(include="number")
+top_students = df.sort_values(by="Skills_Score", ascending=False).head(10)
+st.dataframe(top_students)
 
-corr = numeric_df.corr()
+# -----------------------------
+# SKILL GAP INSIGHT
+# -----------------------------
 
-fig = px.imshow(
-    corr,
-    text_auto=True,
-    aspect="auto"
-)
+st.subheader("📌 Insights")
 
-st.plotly_chart(fig, use_container_width=True)
+avg_score = df["Skills_Score"].mean()
 
-# ==========================================================
-# DATA TABLE
-# ==========================================================
+st.write(f"📊 Average Skills Score: **{avg_score:.2f}**")
 
-st.subheader("📋 Dataset Preview")
+if avg_score < 50:
+    st.error("⚠️ Overall skill level is LOW → Training required")
+elif avg_score < 75:
+    st.warning("⚠️ Moderate skill level → Improvement needed")
+else:
+    st.success("✅ Good skill level across students")
 
-st.dataframe(
-    df.head(50),
-    use_container_width=True
-)
-
-# ==========================================================
-# DOWNLOAD
-# ==========================================================
+# -----------------------------
+# OPTIONAL: DOWNLOAD DATA
+# -----------------------------
 
 csv = df.to_csv(index=False).encode("utf-8")
 
 st.download_button(
-    label="📥 Download Skill Gap Report",
+    label="⬇️ Download Processed Data",
     data=csv,
     file_name="skill_gap_analysis.csv",
     mime="text/csv"
