@@ -12,19 +12,33 @@ st.set_page_config(
 )
 
 # =========================
-# LOAD CSS (FIXED PROPERLY)
+# PATH SETUP
+# =========================
+BASE_DIR = os.path.dirname(__file__)
+
+logo_path = os.path.join(BASE_DIR, "assets", "logo.png")
+css_path = os.path.join(BASE_DIR, "assets", "styles.css")
+data_path = os.path.join(BASE_DIR, "data3", "education_career_success.csv")
+
+# =========================
+# LOAD CSS
 # =========================
 def load_css():
-    css_path = os.path.join(os.path.dirname(__file__), "assets", "styles.css")
-
     try:
         with open(css_path, "r") as f:
-            css = f.read()
-            st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except Exception as e:
         st.warning(f"CSS not loaded: {e}")
 
 load_css()
+
+# =========================
+# SIDEBAR LOGO (FIXED)
+# =========================
+if os.path.exists(logo_path):
+    st.sidebar.image(logo_path, use_container_width=True)
+else:
+    st.sidebar.warning("Logo not found")
 
 # =========================
 # LOAD DATASET
@@ -32,9 +46,7 @@ load_css()
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv(
-            os.path.join(os.path.dirname(__file__), "data3", "education_career_success.csv")
-        )
+        df = pd.read_csv(data_path)
         return df
     except Exception as e:
         st.error(f"Error loading data: {e}")
@@ -55,11 +67,7 @@ st.sidebar.title("📌 Navigation")
 
 menu = st.sidebar.radio(
     "Go to",
-    [
-        "Home",
-        "Dataset Overview",
-        "Quick Insights"
-    ]
+    ["Home", "Dataset Overview", "Quick Insights"]
 )
 
 # =========================
