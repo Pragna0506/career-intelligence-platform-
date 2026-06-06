@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import glob
 import os
 import plotly.express as px
 
@@ -8,33 +9,31 @@ st.set_page_config(page_title="Skill Gap Analysis", layout="wide")
 st.title("📊 Skill Gap Analysis Dashboard")
 
 # -----------------------------
-# SAFE DATA LOADING
+# FAST AUTO DATA LOADER (NO PATH ISSUES)
 # -----------------------------
 @st.cache_data
 def load_data():
-    file_path = "data/job_placement.csv"
 
-    # ✅ CHECK IF FILE EXISTS
-    if not os.path.exists(file_path):
-        st.error(f"""
-        ❌ Dataset not found!
+    # Try to find ANY CSV in data folder
+    csv_files = glob.glob("data/*.csv")
 
-        Expected path:
-        `{file_path}`
+    # If not found, try root folder
+    if len(csv_files) == 0:
+        csv_files = glob.glob("*.csv")
 
-        👉 Fix:
-        - Check if file is inside /data folder
-        - Check spelling and file name
-        """)
+    if len(csv_files) == 0:
+        st.error("❌ No dataset found in project!")
         return None
 
-    df = pd.read_csv(file_path)
-    return df
+    file_path = csv_files[0]  # take first available file
+
+    st.success(f"✅ Dataset loaded: {file_path}")
+
+    return pd.read_csv(file_path)
 
 
 df = load_data()
 
-# STOP EXECUTION IF DATA NOT FOUND
 if df is None:
     st.stop()
 
@@ -45,14 +44,16 @@ st.subheader("Dataset Preview")
 st.dataframe(df.head())
 
 # -----------------------------
-# SAFE COLUMN HANDLING
+# AUTO FEATURE FIX
 # -----------------------------
-for col in ["Communication_Skills", "Technical_Skills"]:
-    if col not in df.columns:
-        df[col] = 0
+if "Communication_Skills" not in df.columns:
+    df["Communication_Skills"] = 0
+
+if "Technical_Skills" not in df.columns:
+    df["Technical_Skills"] = 0
 
 # -----------------------------
-# CREATE SKILLS SCORE
+# CREATE SKILL SCORE
 # -----------------------------
 if "Skills_Score" not in df.columns:
     df["Skills_Score"] = (
@@ -61,20 +62,15 @@ if "Skills_Score" not in df.columns:
     ) / 2
 
 # -----------------------------
-# ANALYSIS
+# CHART 1
 # -----------------------------
-st.subheader("📉 Skills Score Distribution")
+st.subheader("📉 Skill Distribution")
 
-fig1 = px.histogram(
-    df,
-    x="Skills_Score",
-    nbins=20,
-    title="Skills Score Distribution"
-)
+fig1 = px.histogram(df, x="Skills_Score", nbins=20)
 st.plotly_chart(fig1, use_container_width=True)
 
 # -----------------------------
-# PLACEMENT ANALYSIS (SAFE)
+# CHART 2
 # -----------------------------
 if "Placement_Status" in df.columns:
     st.subheader("🎯 Skills vs Placement")
@@ -83,33 +79,29 @@ if "Placement_Status" in df.columns:
         df,
         x="Placement_Status",
         y="Skills_Score",
-        color="Placement_Status",
-        title="Skill Score vs Placement Status"
+        color="Placement_Status"
     )
     st.plotly_chart(fig2, use_container_width=True)
-else:
-    st.warning("Placement_Status column not found")
 
 # -----------------------------
 # TOP STUDENTS
 # -----------------------------
 st.subheader("🏆 Top Students")
 
-top = df.sort_values("Skills_Score", ascending=False).head(10)
-st.dataframe(top)
+st.dataframe(df.sort_values("Skills_Score", ascending=False).head(10))
 
 # -----------------------------
-# INSIGHTS
+# INSIGHT
 # -----------------------------
-st.subheader("📌 Insights")
+st.subheader("📌 Insight")
 
 avg = df["Skills_Score"].mean()
 
-st.write(f"Average Skill Score: **{avg:.2f}**")
+st.write("Average Skill Score:", round(avg, 2))
 
 if avg < 50:
-    st.error("Low skill level → Training required")
+    st.error("Low skill level → Needs training")
 elif avg < 75:
-    st.warning("Moderate skill level → Improvement needed")
+    st.warning("Medium skill level → Improve")
 else:
     st.success("Good skill level")
