@@ -1,22 +1,40 @@
 import streamlit as st
 import pandas as pd
+import os
 
-# Page config
+# =========================
+# PAGE CONFIG
+# =========================
 st.set_page_config(
     page_title="Career Intelligence Platform",
     page_icon="🎓",
     layout="wide"
 )
 
-# Title
-st.title("🎓 Alumni Career Path Tracker")
-st.markdown("### AI Powered Career Analytics Dashboard")
+# =========================
+# LOAD CSS (FIXED PROPERLY)
+# =========================
+def load_css():
+    css_path = os.path.join(os.path.dirname(__file__), "assets", "styles.css")
 
-# Load dataset safely
+    try:
+        with open(css_path, "r") as f:
+            css = f.read()
+            st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+    except Exception as e:
+        st.warning(f"CSS not loaded: {e}")
+
+load_css()
+
+# =========================
+# LOAD DATASET
+# =========================
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv("data3/education_career_success.csv")
+        df = pd.read_csv(
+            os.path.join(os.path.dirname(__file__), "data3", "education_career_success.csv")
+        )
         return df
     except Exception as e:
         st.error(f"Error loading data: {e}")
@@ -24,7 +42,15 @@ def load_data():
 
 df = load_data()
 
-# Sidebar menu
+# =========================
+# TITLE
+# =========================
+st.title("🎓 Alumni Career Path Tracker")
+st.markdown("### AI Powered Career Analytics Dashboard")
+
+# =========================
+# SIDEBAR MENU
+# =========================
 st.sidebar.title("📌 Navigation")
 
 menu = st.sidebar.radio(
@@ -36,7 +62,9 @@ menu = st.sidebar.radio(
     ]
 )
 
-# ---------------- HOME ----------------
+# =========================
+# HOME PAGE
+# =========================
 if menu == "Home":
     st.subheader("🏠 Welcome")
 
@@ -51,7 +79,9 @@ if menu == "Home":
 
     st.success("Use sidebar to explore different modules")
 
-# ---------------- DATASET ----------------
+# =========================
+# DATASET PAGE
+# =========================
 elif menu == "Dataset Overview":
     st.subheader("📊 Dataset Preview")
 
@@ -59,13 +89,13 @@ elif menu == "Dataset Overview":
         st.write("Shape:", df.shape)
         st.dataframe(df.head())
 
-# ---------------- INSIGHTS ----------------
+# =========================
+# INSIGHTS PAGE
+# =========================
 elif menu == "Quick Insights":
     st.subheader("📈 Quick Insights")
 
     if df is not None:
-
-        st.write("### Key Metrics")
 
         col1, col2, col3 = st.columns(3)
 
@@ -80,11 +110,11 @@ elif menu == "Quick Insights":
             if "Career_Satisfaction" in df.columns:
                 st.metric("Avg Satisfaction", round(df["Career_Satisfaction"].mean(), 2))
 
-        st.write("---")
-
-        st.write("### Data Preview")
+        st.markdown("---")
         st.dataframe(df.head())
 
-# ---------------- FOOTER ----------------
+# =========================
+# FOOTER
+# =========================
 st.markdown("---")
 st.markdown("🚀 Built with Streamlit | Career Intelligence System")
