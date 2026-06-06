@@ -12,11 +12,25 @@ st.set_page_config(
     layout="wide"
 )
 
+st.title("🧠 Career Prediction Center")
+st.markdown("Predict placement chances, salary, and career readiness.")
+
 # =========================
-# PATH SETUP
+# FIXED PATH (IMPORTANT)
 # =========================
-BASE_DIR = os.path.dirname(__file__)
+# THIS MOVES FROM /pages → PROJECT ROOT
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MODEL_DIR = os.path.join(BASE_DIR, "models")
+
+# =========================
+# DEBUG (YOU CAN SEE FILES)
+# =========================
+st.write("📂 Model Path:", MODEL_DIR)
+
+try:
+    st.write("📁 Files in models:", os.listdir(MODEL_DIR))
+except Exception as e:
+    st.error(f"Models folder not found: {e}")
 
 # =========================
 # LOAD MODELS SAFELY
@@ -27,12 +41,6 @@ try:
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
     st.stop()
-
-# =========================
-# TITLE
-# =========================
-st.title("🧠 Career Prediction Center")
-st.markdown("Predict placement chances, expected salary, and career readiness.")
 
 # =========================
 # INPUT SECTION
@@ -46,7 +54,7 @@ internships = st.slider("Internships Completed", 0, 10, 0)
 projects = st.slider("Projects Completed", 0, 20, 0)
 
 # =========================
-# INPUT ARRAY (IMPORTANT)
+# INPUT FORMAT (IMPORTANT)
 # =========================
 input_data = np.array([[
     gpa,
@@ -65,10 +73,9 @@ st.subheader("💰 Salary Prediction")
 
 try:
     salary_pred = salary_model.predict(input_data)[0]
-    st.success(f"💰 Predicted Starting Salary: {salary_pred:.2f}")
-
+    st.success(f"💰 Predicted Salary: {salary_pred:.2f}")
 except Exception as e:
-    st.error(f"Salary model prediction failed: {e}")
+    st.error(f"Salary prediction failed: {e}")
 
 # =========================
 # PLACEMENT PREDICTION
@@ -91,7 +98,7 @@ except Exception as e:
 # =========================
 st.subheader("📊 Career Readiness")
 
-readiness_score = (
+score = (
     (gpa * 10) +
     (skills * 5) +
     (networking * 5) +
@@ -99,32 +106,32 @@ readiness_score = (
     (projects * 2)
 )
 
-readiness_score = min(readiness_score / 10, 10)
+score = min(score / 10, 10)
 
-st.metric("Career Score", f"{readiness_score:.1f}/10")
+st.metric("Career Score", f"{score:.1f}/10")
 
-if readiness_score >= 7:
-    st.success("Excellent profile. Strong employability and growth potential.")
-elif readiness_score >= 4:
-    st.info("Good profile. Needs improvement in skills or experience.")
+if score >= 7:
+    st.success("Excellent profile 🚀")
+elif score >= 4:
+    st.info("Good profile 👍")
 else:
-    st.warning("Low profile. Focus on skills and internships.")
+    st.warning("Needs improvement ⚠️")
 
 # =========================
 # CAREER ROADMAP
 # =========================
-st.subheader("🛣 Personalized Career Roadmap")
+st.subheader("🛣 Career Roadmap")
 
 if skills < 5:
-    st.write("👉 Improve technical skills (Python, Data Science, etc.)")
+    st.write("👉 Improve technical skills")
 
 if internships < 2:
-    st.write("👉 Apply for internships to gain experience")
+    st.write("👉 Do internships")
 
 if networking < 5:
-    st.write("👉 Improve LinkedIn networking and connections")
+    st.write("👉 Improve networking")
 
 if projects < 3:
-    st.write("👉 Build more real-world projects")
+    st.write("👉 Build more projects")
 
-st.success("🚀 Keep improving consistently for better opportunities!")
+st.success("🚀 Keep improving consistently!")
