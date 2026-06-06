@@ -12,7 +12,7 @@ st.title("📊 Skill Gap Analysis Dashboard")
 # -----------------------------
 @st.cache_data
 def load_data():
-    file_path = "data/job_Placement.csv"
+    file_path = "data/job_placement.csv"
 
     # ✅ CHECK IF FILE EXISTS
     if not os.path.exists(file_path):
