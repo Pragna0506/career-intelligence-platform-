@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import glob
-import os
 import plotly.express as px
 
 st.set_page_config(page_title="Skill Gap Analysis", layout="wide")
@@ -9,29 +8,28 @@ st.set_page_config(page_title="Skill Gap Analysis", layout="wide")
 st.title("📊 Skill Gap Analysis Dashboard")
 
 # -----------------------------
-# AUTO DATA LOADER (NO PATH ISSUES)
+# AUTO CSV LOADER (100% SAFE)
 # -----------------------------
 @st.cache_data
 def load_data():
 
-    # Search ALL excel files in project
-    excel_files = glob.glob("**/*.xlsx", recursive=True)
+    csv_files = glob.glob("**/*.csv", recursive=True)
 
-    if len(excel_files) == 0:
-        st.error("❌ No Excel file found in project")
+    if len(csv_files) == 0:
+        st.error("❌ No CSV file found. Please upload dataset.")
         return None
 
-    # Prefer DMA dataset
     file_path = None
-    for f in excel_files:
-        if "dma" in f.lower():
+
+    for f in csv_files:
+        if "dma" in f.lower() or "job" in f.lower():
             file_path = f
             break
 
     if file_path is None:
-        file_path = excel_files[0]
+        file_path = csv_files[0]
 
-    df = pd.read_excel(file_path)
+    df = pd.read_csv(file_path)
 
     st.success(f"✅ Dataset loaded: {file_path}")
 
@@ -44,18 +42,12 @@ if df is None:
     st.stop()
 
 # -----------------------------
-# CLEAN COLUMN NAMES (IMPORTANT FIX)
+# CLEAN COLUMN NAMES
 # -----------------------------
 df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
 
 # -----------------------------
-# DATA PREVIEW
-# -----------------------------
-st.subheader("Dataset Preview")
-st.dataframe(df.head())
-
-# -----------------------------
-# HANDLE MISSING COLUMNS SAFELY
+# HANDLE MISSING COLUMNS
 # -----------------------------
 if "technical_skills" not in df.columns:
     df["technical_skills"] = 0
@@ -63,11 +55,8 @@ if "technical_skills" not in df.columns:
 if "communication_skills" not in df.columns:
     df["communication_skills"] = 0
 
-if "projects" not in df.columns:
-    df["projects"] = 0
-
 # -----------------------------
-# CREATE SKILL SCORE
+# SKILL SCORE
 # -----------------------------
 df["skills_score"] = (
     df["technical_skills"] +
@@ -75,25 +64,18 @@ df["skills_score"] = (
 ) / 2
 
 # -----------------------------
-# VISUALIZATION
+# DASHBOARD
 # -----------------------------
 st.subheader("📉 Skill Distribution")
 
 fig1 = px.histogram(df, x="skills_score", nbins=20)
 st.plotly_chart(fig1, use_container_width=True)
 
-# -----------------------------
-# TOP STUDENTS
-# -----------------------------
 st.subheader("🏆 Top Candidates")
 
-top = df.sort_values("skills_score", ascending=False).head(10)
-st.dataframe(top)
+st.dataframe(df.sort_values("skills_score", ascending=False).head(10))
 
-# -----------------------------
-# INSIGHTS
-# -----------------------------
-st.subheader("📌 Insights")
+st.subheader("📌 Insight")
 
 avg = df["skills_score"].mean()
 
