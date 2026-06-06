@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import glob
 import os
 import plotly.express as px
 
@@ -9,53 +8,37 @@ st.set_page_config(page_title="Skill Gap Analysis", layout="wide")
 st.title("📊 Skill Gap Analysis Dashboard")
 
 # -----------------------------
-# DEBUG: SHOW ALL FILES (VERY IMPORTANT)
-# -----------------------------
-st.sidebar.subheader("📁 Debug - Files in Project")
-
-all_files = []
-for root, dirs, files in os.walk("."):
-    for f in files:
-        all_files.append(os.path.join(root, f))
-
-st.sidebar.write(all_files)
-
-# -----------------------------
-# SMART DATA LOADER (100% SAFE)
+# LOAD EXCEL FILE (FIXED)
 # -----------------------------
 @st.cache_data
 def load_data():
 
-    # Try all CSV files in project
-    csv_files = glob.glob("**/*.csv", recursive=True)
+    file_path = "data/DMA DATASET.xlsx"
 
-    if len(csv_files) == 0:
-        return None, None
+    # check file exists
+    if not os.path.exists(file_path):
+        st.error(f"""
+❌ Dataset not found!
 
-    # Prefer job placement file if exists
-    preferred = None
-    for f in csv_files:
-        if "job" in f.lower() and "placement" in f.lower():
-            preferred = f
-            break
+Expected file:
+{file_path}
 
-    file_path = preferred if preferred else csv_files[0]
+👉 FIX:
+- Make sure file is inside /data folder
+- File name must be EXACT: DMA DATASET.xlsx
+        """)
+        return None
 
-    df = pd.read_csv(file_path)
+    # read excel file
+    df = pd.read_excel(file_path)
 
-    return df, file_path
+    return df
 
 
-df, file_path = load_data()
+df = load_data()
 
-# -----------------------------
-# ERROR HANDLING
-# -----------------------------
 if df is None:
-    st.error("❌ No CSV file found anywhere in project!")
     st.stop()
-
-st.success(f"✅ Dataset loaded successfully: {file_path}")
 
 # -----------------------------
 # DATA PREVIEW
@@ -111,16 +94,16 @@ st.subheader("🏆 Top Students")
 st.dataframe(df.sort_values("Skills_Score", ascending=False).head(10))
 
 # -----------------------------
-# INSIGHT
+# INSIGHTS
 # -----------------------------
 st.subheader("📌 Insights")
 
 avg = df["Skills_Score"].mean()
 
-st.write("Average Skill Score:", round(avg, 2))
+st.write(f"Average Skill Score: {avg:.2f}")
 
 if avg < 50:
-    st.error("Low skill level → Training needed")
+    st.error("Low skill level → Training required")
 elif avg < 75:
     st.warning("Medium skill level → Improve skills")
 else:
