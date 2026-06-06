@@ -19,7 +19,7 @@ st.set_page_config(
 
 @st.cache_data
 def load_data():
-    return pd.read_csv("data/education_career_success.csv")
+    return pd.read_csv("data3/education_career_success.csv")
 
 df = load_data()
 
