@@ -10,7 +10,7 @@ st.set_page_config(
 
 st.title("📊 Career Intelligence Dashboard")
 
-# Load data safely
+# ---------------- LOAD DATA ----------------
 @st.cache_data
 def load_data():
     try:
@@ -22,12 +22,11 @@ def load_data():
 
 df = load_data()
 
-# ------------------- MAIN -------------------
-
+# ---------------- MAIN ----------------
 if df is not None:
 
     st.subheader("📌 Dataset Overview")
-    st.write("Shape:", df.shape)
+    st.write(df.shape)
     st.dataframe(df.head())
 
     st.markdown("---")
@@ -54,18 +53,12 @@ if df is not None:
 
     st.markdown("---")
 
-    # ---------------- VISUALIZATIONS ----------------
-
+    # ---------------- CHARTS ----------------
     st.subheader("📊 Visual Analytics")
 
     # 1. Salary Distribution
     if "Starting_Salary" in df.columns:
-        fig1 = px.histogram(
-            df,
-            x="Starting_Salary",
-            nbins=30,
-            title="Salary Distribution"
-        )
+        fig1 = px.histogram(df, x="Starting_Salary", nbins=30, title="Salary Distribution")
         st.plotly_chart(fig1, use_container_width=True)
 
     # 2. GPA vs Salary
@@ -79,15 +72,19 @@ if df is not None:
         )
         st.plotly_chart(fig2, use_container_width=True)
 
-    # 3. Field of Study Distribution
+    # 3. FIXED: Field of Study Distribution
     if "Field_of_Study" in df.columns:
+
+        field_counts = df["Field_of_Study"].value_counts().reset_index()
+        field_counts.columns = ["Field_of_Study", "Count"]
+
         fig3 = px.bar(
-            df["Field_of_Study"].value_counts().reset_index(),
-            x="index",
-            y="Field_of_Study",
-            labels={"index": "Field", "Field_of_Study": "Count"},
+            field_counts,
+            x="Field_of_Study",
+            y="Count",
             title="Field of Study Distribution"
         )
+
         st.plotly_chart(fig3, use_container_width=True)
 
     # 4. Career Satisfaction
