@@ -42,12 +42,14 @@ An AI-powered Career Intelligence Platform that helps students analyze career re
 - Improves student employability
 - Assists placement and counseling teams
 
-👨‍💻 Author
-
-Pragna
-
 🌐 Live Demo
 
 - Deployed on Streamlit 
 
 🚀 Live App:https://pragna0506-career-intelligence-platform--app-ojvlje.streamlit.app/
+
+👨‍💻 Author
+
+Pragna
+
+⭐ Star this repository if you found it useful!
