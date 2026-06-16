@@ -1,4 +1,4 @@
-#🧠 Career Intelligence Platform
+# 🧠 Career Intelligence Platform
 
 An AI-powered Career Intelligence Platform that helps students analyze career readiness, predict placement opportunities, estimate salaries, and identify skill gaps using Machine Learning and Data Analytics.
 
